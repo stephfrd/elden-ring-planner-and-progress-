@@ -4,20 +4,15 @@ from PIL import Image
 from io import BytesIO
 import threading
 import webbrowser
-
-
-# Universal Detail Window (Green Text)
 def open_detail_window(item_data, soft_pink, elden_green):
     detail_win = ctk.CTkToplevel()
     detail_win.title(f"Archives: {item_data.get('name')}")
     detail_win.geometry("550x750")
     detail_win.configure(fg_color="#050505")
     detail_win.attributes("-topmost", True)
-
     if item_data.get('image'):
         img_label = ctk.CTkLabel(detail_win, text="Loading Image...", text_color=elden_green)
         img_label.pack(pady=20)
-
         def load_img():
             try:
                 res = requests.get(item_data['image'], timeout=5)
@@ -26,20 +21,16 @@ def open_detail_window(item_data, soft_pink, elden_green):
                 img_label.configure(image=ctk_img, text="")
             except:
                 img_label.configure(text="Image Unavailable")
-
         threading.Thread(target=load_img, daemon=True).start()
-
     ctk.CTkLabel(detail_win, text=item_data.get('name', '').upper(), font=("Times New Roman", 26, "bold"),
                  text_color=soft_pink).pack()
     info_scroll = ctk.CTkScrollableFrame(detail_win, fg_color="transparent", border_color=elden_green, border_width=1)
     info_scroll.pack(fill="both", expand=True, padx=20, pady=20)
-
     wiki_name = item_data.get('name').replace(" ", "+")
     wiki_url = f"https://eldenring.wiki.fextralife.com/{wiki_name}"
     ctk.CTkButton(detail_win, text="🔗 VIEW ON FEXTRALIFE WIKI", fg_color=elden_green, text_color="black",
                   font=("Arial", 12, "bold"), hover_color=soft_pink, command=lambda: webbrowser.open(wiki_url)).pack(
         pady=10)
-
     skip_keys = ['id', 'name', 'image', 'category_type']
     for key, value in item_data.items():
         if key in skip_keys or not value or value == "-": continue
@@ -54,8 +45,6 @@ def open_detail_window(item_data, soft_pink, elden_green):
         else:
             ctk.CTkLabel(info_scroll, text=str(value), wraplength=450, justify="left", font=("Consolas", 13),
                          text_color=elden_green).pack(anchor="w", padx=15)
-
-
 class ProgressTrackerFrame(ctk.CTkFrame):
     def __init__(self, master, soft_pink, btn_pink, back_command, **kwargs):
         super().__init__(master, fg_color="#000000", **kwargs)
@@ -69,10 +58,8 @@ class ProgressTrackerFrame(ctk.CTkFrame):
         # Header & Search Bar
         self.header = ctk.CTkFrame(self, fg_color="transparent")
         self.header.pack(fill="x", padx=30, pady=20)
-
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.update_autofill)
-
         self.search_entry = ctk.CTkEntry(
             self.header, placeholder_text="Type at least one letter...",
             textvariable=self.search_var, width=450, height=45,
@@ -80,24 +67,17 @@ class ProgressTrackerFrame(ctk.CTkFrame):
             placeholder_text_color="#333333", border_color=self.soft_pink
         )
         self.search_entry.pack(side="left")
-
-        # Main Hub Container
         self.display_container = ctk.CTkFrame(self, fg_color="transparent")
         self.display_container.pack(fill="both", expand=True, padx=30)
-
-        # Floating Autofill Frame
         self.autofill_frame = ctk.CTkScrollableFrame(
             self, fg_color=self.ELDEN_GREEN, border_color=self.soft_pink,
             border_width=2, width=435, height=250
         )
-
         self.back_btn = ctk.CTkButton(self, text="← BACK", fg_color=self.soft_pink, text_color="black",
                                       command=back_command)
         self.back_btn.place(relx=0.98, rely=0.96, anchor="se")
-
         threading.Thread(target=self.pre_fetch, daemon=True).start()
         self.show_category_hub()
-
     def pre_fetch(self):
         for cat in self.categories:
             try:
@@ -109,27 +89,18 @@ class ProgressTrackerFrame(ctk.CTkFrame):
                 pass
 
     def update_autofill(self, *args):
-        """Ensures results stay visible for 1, 2, or more letters."""
         query = self.search_var.get().strip().lower()
-
-        # CLEAR CURRENT RESULTS
         for w in self.autofill_frame.winfo_children():
             w.destroy()
-
-        # CHECK FOR AT LEAST ONE CHARACTER
-        if len(query) < 1:
+            if len(query) < 1:
             self.autofill_frame.place_forget()
             return
-
-        # FIND MATCHES
         matches = [n for n in self.master_data.keys() if query in n.lower()]
 
         if matches:
             # Re-place and Lift every time text changes to keep it on top
             self.autofill_frame.place(x=40, y=70)
             self.autofill_frame.lift()
-
-            # Limit to top 15 results for performance
             for m in matches[:15]:
                 item_info = self.master_data[m]
                 ctk.CTkButton(
@@ -142,7 +113,6 @@ class ProgressTrackerFrame(ctk.CTkFrame):
                     command=lambda i=item_info: self.open_info(i)
                 ).pack(fill="x", pady=1)
         else:
-            # If no matches found, hide the frame
             self.autofill_frame.place_forget()
 
     def open_info(self, item):
@@ -159,7 +129,6 @@ class ProgressTrackerFrame(ctk.CTkFrame):
                           border_width=1, hover_color=self.soft_pink,
                           command=lambda c=cat: self.load_category_view(c)).grid(row=i // 3, column=i % 3, padx=20,
                                                                                  pady=15)
-
     def load_category_view(self, category):
         for w in self.display_container.winfo_children(): w.destroy()
         nav = ctk.CTkFrame(self.display_container, fg_color="transparent")
