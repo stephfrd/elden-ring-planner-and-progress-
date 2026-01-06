@@ -12,7 +12,6 @@ try:
     from progress_tracker import ProgressTrackerFrame
     from planner import BuildPlannerFrame
 except ImportError:
-    # Dummy classes for testing if files are missing
     class ProgressTrackerFrame(ctk.CTkFrame):
         pass
     class BuildPlannerFrame(ctk.CTkFrame):
